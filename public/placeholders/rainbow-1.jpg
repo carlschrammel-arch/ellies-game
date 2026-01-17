@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="rainbow-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB"/>
+      <stop offset="100%" style="stop-color:#E6F3FF"/>
+    </linearGradient>
+  </defs>
+  <rect fill="url(#rainbow-bg)" width="400" height="400"/>
+  <g fill="none" stroke-width="20">
+    <path d="M50 350 Q200 50 350 350" stroke="#FF6B6B"/>
+    <path d="M70 350 Q200 80 330 350" stroke="#FFA500"/>
+    <path d="M90 350 Q200 110 310 350" stroke="#FFD93D"/>
+    <path d="M110 350 Q200 140 290 350" stroke="#6BCB77"/>
+    <path d="M130 350 Q200 170 270 350" stroke="#4D96FF"/>
+    <path d="M150 350 Q200 200 250 350" stroke="#9B59B6"/>
+  </g>
+  <g fill="white">
+    <ellipse cx="80" cy="350" rx="50" ry="30"/>
+    <ellipse cx="100" cy="340" rx="40" ry="25"/>
+    <ellipse cx="320" cy="350" rx="50" ry="30"/>
+    <ellipse cx="300" cy="340" rx="40" ry="25"/>
+  </g>
+  <circle cx="350" cy="60" r="35" fill="#FFD700"/>
+</svg>

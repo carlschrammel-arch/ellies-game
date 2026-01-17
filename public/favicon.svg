@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Teddy bear favicon - centered on face with hearts -->
+  
+  <!-- Ears -->
+  <circle cx="14" cy="12" r="9" fill="#C9A06B"/>
+  <circle cx="14" cy="12" r="6" fill="#DDBF94"/>
+  <circle cx="50" cy="12" r="9" fill="#C9A06B"/>
+  <circle cx="50" cy="12" r="6" fill="#DDBF94"/>
+  
+  <!-- Head -->
+  <ellipse cx="32" cy="28" rx="20" ry="18" fill="#C9A06B"/>
+  <ellipse cx="32" cy="27" rx="18" ry="16" fill="#DDBF94"/>
+  
+  <!-- Muzzle -->
+  <ellipse cx="32" cy="32" rx="10" ry="8" fill="#E8CBA8"/>
+  
+  <!-- Eyes -->
+  <ellipse cx="24" cy="24" rx="3" ry="3.5" fill="#3D2914"/>
+  <ellipse cx="40" cy="24" rx="3" ry="3.5" fill="#3D2914"/>
+  <circle cx="25" cy="23" r="1.2" fill="white"/>
+  <circle cx="41" cy="23" r="1.2" fill="white"/>
+  
+  <!-- Nose -->
+  <ellipse cx="32" cy="31" rx="4" ry="3" fill="#3D2914"/>
+  
+  <!-- Smile -->
+  <path d="M27 35 Q32 39 37 35" stroke="#3D2914" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Broken purple heart (left) -->
+  <g transform="translate(4, 46) scale(0.8)">
+    <path d="M6 3 C6 1, 3 0, 1.5 0 C0 0, -1 1.5, -1 3 C-1 5.5, 3 8, 4 9" fill="#9333EA"/>
+    <path d="M8 3 C8 1, 11 0, 12.5 0 C14 0, 15 1.5, 15 3 C15 5.5, 11 8, 10 9" fill="#A855F7" transform="translate(1.5, 0.8) rotate(6 10 5)"/>
+  </g>
+  
+  <!-- Full pink heart (right) -->
+  <g transform="translate(46, 46) scale(0.8)">
+    <path d="M7 3 C7 1, 4 0, 2.5 0 C1 0, 0 1.5, 0 3 C0 6, 7 11, 7 11 C7 11, 14 6, 14 3 C14 1.5, 13 0, 11.5 0 C10 0, 7 1, 7 3" fill="#EC4899"/>
+    <ellipse cx="4" cy="3" rx="1.5" ry="1" fill="#F9A8D4" opacity="0.6"/>
+  </g>
+</svg>

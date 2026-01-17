@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <defs>
+    <linearGradient id="adventure-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF7F50"/>
+      <stop offset="100%" style="stop-color:#FFD93D"/>
+    </linearGradient>
+  </defs>
+  <rect fill="url(#adventure-sky)" width="400" height="400"/>
+  <polygon points="0,400 200,150 400,400" fill="#8B4513"/>
+  <polygon points="200,150 220,200 180,200" fill="white"/>
+  <g transform="translate(280, 280)">
+    <rect x="-20" y="-60" width="40" height="80" fill="#2d2d2d" rx="5"/>
+    <rect x="-25" y="-65" width="50" height="20" fill="#4a5568" rx="3"/>
+    <circle cx="0" cy="30" r="8" fill="#FFD700"/>
+  </g>
+  <g fill="#228B22">
+    <polygon points="50,400 70,350 90,400"/>
+    <polygon points="320,400 340,340 360,400"/>
+  </g>
+  <path d="M100 250 L120 280 L140 250" stroke="#8B4513" stroke-width="4" fill="none"/>
+  <path d="M110 265 L130 265" stroke="#8B4513" stroke-width="3"/>
+</svg>
