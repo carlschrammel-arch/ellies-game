@@ -222,17 +222,19 @@ export function SetupForm() {
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 How many cards? 🃏
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2" role="group" aria-label="Question count options">
                 {questionCountOptions.map((count) => (
                   <motion.button
                     key={count}
                     onClick={() => handleCountChange(count)}
                     className={`flex-1 py-3 px-4 rounded-xl font-bold text-lg transition-all ${
                       state.targetCount === count
-                        ? 'bg-secondary-500 text-white shadow-lg'
+                        ? 'bg-gradient-to-r from-secondary-400 to-secondary-500 text-slate-900 shadow-lg ring-2 ring-secondary-300'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                     whileTap={{ scale: settings.reducedMotion ? 1 : 0.98 }}
+                    aria-pressed={state.targetCount === count}
+                    data-testid={`count-option-${count}`}
                   >
                     {count}
                   </motion.button>

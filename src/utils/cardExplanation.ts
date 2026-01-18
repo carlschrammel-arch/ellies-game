@@ -25,6 +25,73 @@ export interface EnrichmentData {
   gameGenre?: string;
 }
 
+/**
+ * Generic fallback string - we want to avoid this being used
+ */
+const GENERIC_FALLBACK = 'This is something cool you might want to check out!';
+
+/**
+ * Validates that a card has required metadata for explanation generation
+ */
+export interface CardValidation {
+  isValid: boolean;
+  missingFields: string[];
+  hasNonGenericExplanation: boolean;
+}
+
+export function validateCard(card: GeneratedCard): CardValidation {
+  const missingFields: string[] = [];
+  
+  if (!card.title || card.title.trim() === '') {
+    missingFields.push('title');
+  }
+  if (!card.query || card.query.trim() === '') {
+    missingFields.push('query');
+  }
+  if (!card.category || card.category.trim() === '') {
+    missingFields.push('category');
+  }
+  if (!card.themeTags || card.themeTags.length === 0) {
+    missingFields.push('themeTags');
+  }
+  
+  // Test if explanation would be non-generic
+  let hasNonGenericExplanation = true;
+  if (missingFields.length === 0) {
+    const explanation = generateCardExplanation(card);
+    hasNonGenericExplanation = explanation.explanation !== GENERIC_FALLBACK;
+  }
+  
+  return {
+    isValid: missingFields.length === 0,
+    missingFields,
+    hasNonGenericExplanation,
+  };
+}
+
+/**
+ * Fill missing card metadata to ensure valid explanations
+ */
+export function ensureCardMetadata(card: GeneratedCard): GeneratedCard {
+  const filledCard = { ...card };
+  
+  if (!filledCard.title || filledCard.title.trim() === '') {
+    filledCard.title = 'Mystery Item';
+  }
+  if (!filledCard.query || filledCard.query.trim() === '') {
+    filledCard.query = filledCard.title;
+  }
+  if (!filledCard.category || filledCard.category.trim() === '') {
+    filledCard.category = 'other';
+  }
+  if (!filledCard.themeTags || filledCard.themeTags.length === 0) {
+    // Infer tags from category
+    filledCard.themeTags = [filledCard.category];
+  }
+  
+  return filledCard;
+}
+
 // Category-specific explanation templates
 // {title} = card title, {context} = contextual info
 const categoryTemplates: Record<string, {

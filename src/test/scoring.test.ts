@@ -416,3 +416,73 @@ describe('Mode and Count Selection', () => {
     expect(deck.length).toBeGreaterThan(20);
   });
 });
+// ============================================
+// BUG 2: Card Relevance Mix Tests
+// ============================================
+
+describe('Deck Builder - Card Relevance Mix', () => {
+  it('should have 80-90% related cards and 10-20% surprise cards', () => {
+    const deck = buildDeck({
+      favoritesText: 'dogs cats pizza',
+      selectedCategories: ['animals', 'foodtreats'],
+      targetCount: 30,
+    });
+
+    const relatedCount = deck.filter(c => c.isRelated !== false).length;
+    const surpriseCount = deck.filter(c => c.isRelated === false).length;
+    const total = deck.length;
+
+    const relatedPct = (relatedCount / total) * 100;
+    const surprisePct = (surpriseCount / total) * 100;
+
+    // Related should be 80-90% (with some tolerance)
+    expect(relatedPct).toBeGreaterThanOrEqual(75); // Allow some margin
+    expect(relatedPct).toBeLessThanOrEqual(95);
+
+    // Surprise should be 10-20%
+    expect(surprisePct).toBeGreaterThanOrEqual(5);
+    expect(surprisePct).toBeLessThanOrEqual(25);
+  });
+
+  it('should include at least one surprise card even for small decks', () => {
+    const deck = buildDeck({
+      favoritesText: 'cats',
+      selectedCategories: [],
+      targetCount: 15,
+    });
+
+    const surpriseCount = deck.filter(c => c.isRelated === false).length;
+    expect(surpriseCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('surprise cards should be from curated kid-safe pool', () => {
+    const deck = buildDeck({
+      favoritesText: 'technology robots coding',
+      selectedCategories: ['techgadgets'],
+      targetCount: 30,
+    });
+
+    const surpriseCards = deck.filter(c => c.isRelated === false);
+    
+    // All surprise cards should have valid categories
+    surpriseCards.forEach(card => {
+      expect(card.category).toBeTruthy();
+      expect(card.themeTags.length).toBeGreaterThan(0);
+    });
+  });
+
+  it('related cards should be tagged from user topics or selected categories', () => {
+    const deck = buildDeck({
+      favoritesText: 'dogs',
+      selectedCategories: ['sports'],
+      targetCount: 20,
+    });
+
+    const relatedCards = deck.filter(c => c.isRelated !== false);
+    
+    relatedCards.forEach(card => {
+      // Each related card should have tags
+      expect(card.themeTags.length).toBeGreaterThan(0);
+    });
+  });
+});

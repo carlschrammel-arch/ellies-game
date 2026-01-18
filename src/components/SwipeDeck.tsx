@@ -27,43 +27,77 @@ export function SwipeDeck() {
   
   // Track used card titles to avoid repetition in unlimited mode
   const usedTitlesRef = useRef<Set<string>>(new Set());
+  
+  // Track if game completion has been triggered to prevent double-firing
+  const completionTriggeredRef = useRef(false);
+  
+  // Track if swipe animation is in progress
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const currentCard = state.cards[state.currentCardIndex];
   const nextCard = state.cards[state.currentCardIndex + 1];
   const thirdCard = state.cards[state.currentCardIndex + 2];
 
   const isUnlimitedMode = state.mode === 'unlimited';
-  const swipeCount = state.swipeResults.filter(r => !r.skipped).length;
+  const swipeCount = state.swipeResults.length;
   const favoritesCount = state.swipeResults.filter(r => r.liked && !r.skipped).length;
   const targetCount = state.targetCount;
   const progress = isUnlimitedMode ? swipeCount : Math.min(swipeCount, targetCount);
   const remainingCards = state.cards.length - state.currentCardIndex;
+  
+  // Calculate if game should complete (standard mode)
+  const isGameComplete = !isUnlimitedMode && swipeCount >= targetCount;
+
+  // Reset completion flag when starting a new game
+  useEffect(() => {
+    if (state.currentCardIndex === 0 && state.swipeResults.length === 0) {
+      completionTriggeredRef.current = false;
+    }
+  }, [state.currentCardIndex, state.swipeResults.length]);
+  
+  // Handle game completion for standard mode - single source of truth
+  useEffect(() => {
+    if (isGameComplete && !completionTriggeredRef.current && !isAnimating) {
+      completionTriggeredRef.current = true;
+      // Small delay to ensure state is settled
+      const timer = setTimeout(() => {
+        calculateResults();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isGameComplete, isAnimating, calculateResults]);
 
   const handleSwipe = useCallback(
     (liked: boolean) => {
+      // Prevent swiping if game is already complete or animating
+      if (completionTriggeredRef.current || isAnimating) return;
+      
+      setIsAnimating(true);
       playSwipeSound(liked);
       swipeCard(liked);
-
-      // In standard mode, check if game is complete
-      if (!isUnlimitedMode && state.currentCardIndex >= targetCount - 1) {
-        setTimeout(() => {
-          calculateResults();
-        }, 500);
-      }
+      
+      // Reset animation state after swipe completes
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 300);
     },
-    [playSwipeSound, swipeCard, state.currentCardIndex, targetCount, calculateResults, isUnlimitedMode]
+    [playSwipeSound, swipeCard, isAnimating]
   );
 
   const handleSkip = useCallback(() => {
+    if (completionTriggeredRef.current || isAnimating) return;
+    setIsAnimating(true);
     skipCard();
-  }, [skipCard]);
+    setTimeout(() => setIsAnimating(false), 300);
+  }, [skipCard, isAnimating]);
 
   const handleInfoRequest = useCallback(() => {
     setShowExplanation(true);
   }, []);
 
   const handleReadyForResults = useCallback(() => {
-    if (swipeCount > 0) {
+    if (swipeCount > 0 && !completionTriggeredRef.current) {
+      completionTriggeredRef.current = true;
       calculateResults();
     }
   }, [swipeCount, calculateResults]);
@@ -224,13 +258,6 @@ export function SwipeDeck() {
       generateMoreCards();
     }
   }, [remainingCards, isUnlimitedMode, state.selectedCategories, state.favorites, appendCards]);
-
-  // In standard mode, auto-complete when all cards are swiped
-  useEffect(() => {
-    if (!isUnlimitedMode && state.currentCardIndex >= targetCount && swipeCount > 0) {
-      calculateResults();
-    }
-  }, [state.currentCardIndex, targetCount, calculateResults, isUnlimitedMode, swipeCount]);
 
   if (state.cards.length === 0) {
     return (

@@ -1,7 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { generateCardExplanation, getExplanationForCard, type CardExplanation } from '../utils/cardExplanation';
+import { generateCardExplanation, getExplanationForCard } from '../utils/cardExplanation';
 import type { GeneratedCard } from '../utils/deckBuilder';
 import { getCardIcon } from '../utils/iconSelector';
+
+// Helper to create test cards with all required properties
+function testCard(title: string, category: string, themeTags: string[]): GeneratedCard {
+  return {
+    id: `test-${title.toLowerCase().replace(/\s+/g, '-')}`,
+    title,
+    query: title,
+    alt: `A ${category} card: ${title}`,
+    category,
+    themeTags,
+  };
+}
 
 describe('Card Explanation System', () => {
   describe('generateCardExplanation', () => {
@@ -9,11 +21,11 @@ describe('Card Explanation System', () => {
       const explanations = new Set<string>();
       
       const cards: GeneratedCard[] = [
-        { title: 'Golden Retriever', category: 'animals', themeTags: ['dog', 'pet'] },
-        { title: 'Tabby Cat', category: 'animals', themeTags: ['cat', 'pet'] },
-        { title: 'Pepperoni Pizza', category: 'food', themeTags: ['pizza', 'italian'] },
-        { title: 'Fortnite', category: 'games', themeTags: ['video game', 'battle royale'] },
-        { title: 'Taylor Swift', category: 'music', themeTags: ['singer', 'pop'] },
+        testCard('Golden Retriever', 'animals', ['dog', 'pet']),
+        testCard('Tabby Cat', 'animals', ['cat', 'pet']),
+        testCard('Pepperoni Pizza', 'food', ['pizza', 'italian']),
+        testCard('Fortnite', 'games', ['video game', 'battle royale']),
+        testCard('Taylor Swift', 'music', ['singer', 'pop']),
       ];
       
       for (const card of cards) {
@@ -26,11 +38,7 @@ describe('Card Explanation System', () => {
     });
 
     it('should generate sports-specific explanations with team/position info', () => {
-      const card: GeneratedCard = {
-        title: 'Shohei Ohtani',
-        category: 'sports',
-        themeTags: ['baseball', 'player'],
-      };
+      const card = testCard('Shohei Ohtani', 'sports', ['baseball', 'player']);
       
       const enrichment = {
         playerPosition: 'Pitcher/DH',
@@ -54,11 +62,7 @@ describe('Card Explanation System', () => {
     });
 
     it('should generate nail-related explanations for nails category', () => {
-      const card: GeneratedCard = {
-        title: 'Glitter Nails',
-        category: 'nails',
-        themeTags: ['sparkle', 'manicure'],
-      };
+      const card = testCard('Glitter Nails', 'nails', ['sparkle', 'manicure']);
       
       const result = generateCardExplanation(card);
       
@@ -72,11 +76,7 @@ describe('Card Explanation System', () => {
     });
 
     it('should generate makeup-related explanations for makeup category', () => {
-      const card: GeneratedCard = {
-        title: 'Sparkly Eyeshadow',
-        category: 'makeup',
-        themeTags: ['glitter', 'eyes'],
-      };
+      const card = testCard('Sparkly Eyeshadow', 'makeup', ['glitter', 'eyes']);
       
       const result = generateCardExplanation(card);
       
@@ -95,8 +95,8 @@ describe('Card Explanation System', () => {
 
     it('should always return a CardExplanation object with explanation', () => {
       const cards: GeneratedCard[] = [
-        { title: 'Test', category: 'unknown', themeTags: [] },
-        { title: 'Something Random', category: 'made-up-category', themeTags: ['a', 'b'] },
+        testCard('Test', 'unknown', []),
+        testCard('Something Random', 'made-up-category', ['a', 'b']),
       ];
       
       for (const card of cards) {
@@ -107,11 +107,7 @@ describe('Card Explanation System', () => {
     });
 
     it('should be deterministic for the same card', () => {
-      const card: GeneratedCard = {
-        title: 'Chocolate Cake',
-        category: 'food',
-        themeTags: ['dessert', 'sweet'],
-      };
+      const card = testCard('Chocolate Cake', 'food', ['dessert', 'sweet']);
       
       const result1 = generateCardExplanation(card);
       const result2 = generateCardExplanation(card);
@@ -122,11 +118,7 @@ describe('Card Explanation System', () => {
 
   describe('getExplanationForCard', () => {
     it('should return a CardExplanation object', () => {
-      const card: GeneratedCard = {
-        title: 'Minecraft',
-        category: 'games',
-        themeTags: ['video game', 'building'],
-      };
+      const card = testCard('Minecraft', 'games', ['video game', 'building']);
       
       const result = getExplanationForCard(card);
       
@@ -231,11 +223,7 @@ describe('Team Resolution', () => {
 
 describe('Integration: Card Generation with Icons and Explanations', () => {
   it('should NOT call German Shepherd a professional athlete', () => {
-    const card: GeneratedCard = {
-      title: 'German Shepherd',
-      category: 'animals',
-      themeTags: ['dog', 'pet'],
-    };
+    const card = testCard('German Shepherd', 'animals', ['dog', 'pet']);
     
     const result = generateCardExplanation(card);
     
@@ -250,11 +238,7 @@ describe('Integration: Card Generation with Icons and Explanations', () => {
   });
 
   it('should generate consistent card data', () => {
-    const card: GeneratedCard = {
-      title: 'Chocolate Chip Cookies',
-      category: 'food',
-      themeTags: ['dessert', 'baking', 'sweet'],
-    };
+    const card = testCard('Chocolate Chip Cookies', 'food', ['dessert', 'baking', 'sweet']);
     
     const result = generateCardExplanation(card);
     const icon = getCardIcon(card.title, card.category, card.themeTags);
@@ -269,11 +253,7 @@ describe('Integration: Card Generation with Icons and Explanations', () => {
   });
 
   it('should generate appropriate data for sports roster cards', () => {
-    const playerCard: GeneratedCard = {
-      title: 'Mookie Betts',
-      category: 'sports',
-      themeTags: ['baseball', 'player', 'dodgers'],
-    };
+    const playerCard = testCard('Mookie Betts', 'sports', ['baseball', 'player', 'dodgers']);
     
     const enrichment = {
       playerPosition: 'Right Field',
@@ -292,17 +272,8 @@ describe('Integration: Card Generation with Icons and Explanations', () => {
   });
 
   it('should handle beauty category cards well', () => {
-    const nailCard: GeneratedCard = {
-      title: 'Rainbow Ombre Nails',
-      category: 'nails',
-      themeTags: ['colorful', 'gradient'],
-    };
-    
-    const makeupCard: GeneratedCard = {
-      title: 'Glitter Lip Gloss',
-      category: 'makeup',
-      themeTags: ['sparkle', 'lips'],
-    };
+    const nailCard = testCard('Rainbow Ombre Nails', 'nails', ['colorful', 'gradient']);
+    const makeupCard = testCard('Glitter Lip Gloss', 'makeup', ['sparkle', 'lips']);
     
     const nailResult = generateCardExplanation(nailCard);
     const makeupResult = generateCardExplanation(makeupCard);

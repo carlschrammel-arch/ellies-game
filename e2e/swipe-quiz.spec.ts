@@ -147,4 +147,74 @@ test.describe('Swipe Quiz', () => {
     await expect(musicToggle).toBeEnabled();
     await expect(motionToggle).toBeEnabled();
   });
+
+  test('standard mode shows results after exact swipe count', async ({ page }) => {
+    await page.goto('/');
+
+    // Enter minimum info
+    await page.getByPlaceholder(/I love cats, pizza/i).fill('dinosaurs, space, robots');
+
+    // Select 15 swipes (standard mode - smallest count for faster test)
+    await page.getByTestId('swipe-count-15').click();
+
+    // Start the game
+    await page.getByRole('button', { name: /Let's Go/i }).click();
+
+    // Wait for swipe screen to load
+    await expect(page.getByText(/Swipe or use buttons/i)).toBeVisible({ timeout: 10000 });
+
+    // Verify we're in standard mode with progress indicator
+    await expect(page.locator('text=/0\\/15/')).toBeVisible();
+
+    // Swipe exactly 15 times using buttons (more reliable than touch/keyboard)
+    for (let i = 0; i < 15; i++) {
+      const loveButton = page.getByRole('button', { name: /Love it/i });
+      const nopeButton = page.getByRole('button', { name: /Not for me/i });
+      
+      // Alternate to get variety in results
+      if (i % 3 === 0) {
+        await nopeButton.click();
+      } else {
+        await loveButton.click();
+      }
+      
+      // Wait for animation to complete
+      await page.waitForTimeout(350);
+    }
+
+    // Results screen should appear automatically
+    await expect(page.getByText(/You are\.\.\./i)).toBeVisible({ timeout: 5000 });
+    
+    // Should show personality type name
+    const personalityText = page.locator('.font-display.text-3xl, .font-display.text-4xl');
+    await expect(personalityText).toBeVisible();
+    
+    // Should show stats section
+    await expect(page.getByText(/Your Swipe Stats/i)).toBeVisible();
+    
+    // Play again button should be visible
+    await expect(page.getByRole('button', { name: /Play Again/i })).toBeVisible();
+  });
+
+  test('swipe count buttons are visible and have proper styling', async ({ page }) => {
+    await page.goto('/');
+
+    // Check each swipe count button exists and has visible text
+    const countButtons = [15, 25, 50];
+    
+    for (const count of countButtons) {
+      const button = page.getByTestId(`swipe-count-${count}`);
+      await expect(button).toBeVisible();
+      
+      // Check button text is visible (not transparent)
+      const buttonText = button.locator('text=' + count);
+      await expect(buttonText).toBeVisible();
+    }
+
+    // Click one and verify it gets selected styling
+    await page.getByTestId('swipe-count-25').click();
+    
+    // The selected button should have aria-pressed="true"
+    await expect(page.getByTestId('swipe-count-25')).toHaveAttribute('aria-pressed', 'true');
+  });
 });

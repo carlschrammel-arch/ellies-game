@@ -216,19 +216,29 @@ export function calculatePersonalityType(results: SwipeResult[]): PersonalityTyp
     }
   }
   
-  // Find the highest scoring personality
-  let maxScore = 0;
+  // Sort all personality types by score
+  const sortedScores = Object.entries(personalityScores)
+    .map(([typeId, score]) => ({ typeId, score }))
+    .sort((a, b) => b.score - a.score);
+  
+  // Find the highest scoring personality with tie-breaking diversity
+  const maxScore = sortedScores[0]?.score || 0;
+  const epsilon = 0.5; // Consider scores within this range as "close"
+  
+  // Get all personalities with scores close to the max
+  const topCandidates = sortedScores.filter(
+    (s) => s.score >= maxScore - epsilon && s.score > 0
+  );
+  
   let selectedType = personalityTypes[0];
   
-  for (const [typeId, score] of Object.entries(personalityScores)) {
-    if (score > maxScore) {
-      maxScore = score;
-      selectedType = personalityTypes.find((t) => t.id === typeId) || personalityTypes[0];
-    }
-  }
-  
-  // If no clear winner, pick based on most common liked category
-  if (maxScore === 0) {
+  if (topCandidates.length > 0) {
+    // If multiple close candidates, add some variety by picking based on hash of session data
+    const candidateIndex = hashForDiversity(validResults) % topCandidates.length;
+    const selectedId = topCandidates[candidateIndex].typeId;
+    selectedType = personalityTypes.find((t) => t.id === selectedId) || personalityTypes[0];
+  } else if (maxScore === 0) {
+    // If no clear winner, pick based on most common liked category
     const categoryCounts: Record<string, number> = {};
     for (const result of validResults) {
       if (result.liked && result.card.category) {
@@ -243,10 +253,32 @@ export function calculatePersonalityType(results: SwipeResult[]): PersonalityTyp
       if (topTypeId) {
         selectedType = personalityTypes.find((t) => t.id === topTypeId) || selectedType;
       }
+    } else {
+      // Random selection from all types for variety
+      const randomIndex = hashForDiversity(validResults) % personalityTypes.length;
+      selectedType = personalityTypes[randomIndex];
     }
   }
   
   return selectedType;
+}
+
+/**
+ * Generate a deterministic hash based on session results for variety
+ * This ensures the same swipe pattern gives the same result,
+ * but different patterns give different vibes
+ */
+function hashForDiversity(results: SwipeResult[]): number {
+  let hash = 0;
+  for (const result of results) {
+    const str = `${result.card.id}-${result.liked}`;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+  }
+  return Math.abs(hash);
 }
 
 // Build card deck from user input

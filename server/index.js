@@ -57,6 +57,8 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { resolveTeam, detectSportsTeamQuery } from './teamResolver.js';
+import { getRoster, getTeamThemedItems, positionNames } from './rosterService.js';
 var __filename = fileURLToPath(import.meta.url);
 var __dirname = path.dirname(__filename);
 var app = express();
@@ -195,6 +197,82 @@ app.get('/api/images', function (req, res) { return __awaiter(void 0, void 0, vo
         }
     });
 }); });
+// API endpoint: GET /api/sports/roster?team=<teamName>
+// Returns current roster for a sports team
+app.get('/api/sports/roster', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var teamQuery, team, rosterData, enrichedPlayers, error_2;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                teamQuery = req.query.team;
+                if (!teamQuery || typeof teamQuery !== 'string') {
+                    res.status(400).json({ error: 'Query parameter "team" is required' });
+                    return [2 /*return*/];
+                }
+                team = resolveTeam(teamQuery);
+                if (!team) {
+                    res.status(404).json({
+                        error: 'Team not found',
+                        message: "Could not find team matching \"".concat(teamQuery, "\". Try team name like \"Dodgers\" or \"Yankees\"."),
+                    });
+                    return [2 /*return*/];
+                }
+                _a.label = 1;
+            case 1:
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, getRoster(team)];
+            case 2:
+                rosterData = _a.sent();
+                enrichedPlayers = rosterData.players.map(function (player) { return (__assign(__assign({}, player), { positionName: positionNames[player.position] || player.position, teamName: team.name, teamFullName: team.fullName, sport: team.sport })); });
+                res.json({
+                    team: {
+                        id: team.id,
+                        name: team.name,
+                        fullName: team.fullName,
+                        city: team.city,
+                        stadium: team.stadium,
+                        colors: team.colors,
+                        sport: team.sport,
+                    },
+                    players: enrichedPlayers,
+                    themedItems: getTeamThemedItems(team),
+                    source: rosterData.source,
+                    cached: rosterData.cached,
+                    warning: rosterData.source === 'fallback'
+                        ? 'Using cached roster data - may not reflect most recent roster changes'
+                        : undefined,
+                });
+                return [3 /*break*/, 4];
+            case 3:
+                error_2 = _a.sent();
+                console.error('[Roster API Error]', error_2);
+                res.status(500).json({
+                    error: 'Failed to fetch roster',
+                    message: 'Could not retrieve roster data. Please try again later.',
+                });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
+        }
+    });
+}); });
+// API endpoint: GET /api/sports/detect?q=<userInput>
+// Detects if user input is asking about a sports team
+app.get('/api/sports/detect', function (req, res) {
+    var query = req.query.q;
+    if (!query || typeof query !== 'string') {
+        res.status(400).json({ error: 'Query parameter "q" is required' });
+        return;
+    }
+    var detection = detectSportsTeamQuery(query);
+    res.json({
+        isTeamQuery: detection.isTeamQuery,
+        team: detection.team ? {
+            name: detection.team.name,
+            fullName: detection.team.fullName,
+            slug: detection.team.slug,
+        } : null,
+    });
+});
 // Health check
 app.get('/api/health', function (_req, res) {
     res.json({ status: 'ok', unsplash: !!process.env.UNSPLASH_ACCESS_KEY });
